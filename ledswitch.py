@@ -26,15 +26,22 @@ def switch_leds(set_disabled: bool) -> None:
                 status = True if led.get("disabled").lower() == "true" else False
                 if status != set_disabled:
                     logging.debug(f"Switching LED {led.get('.id')} to disabled={set_disabled}")
-                    patch = session.patch(
-                        url=apiurl + "/" + led.get(".id"),
-                        auth=auth,
-                        json={"disabled": set_disabled},
-                        timeout=2
-                    )
-                    if patch.status_code != 200:
-                        logging.error(f"Failed to switch LED: {led.get('.id')}"
-                                      f" with status {patch.status_code}, content: {patch.text}")
+
+                    # Workaround for assumed bug found in RouterOS 7.15
+                    # The devices returns the desired status for the LED and the LED stops blinking on activity but
+                    # it sometimes stays on instead of off.
+                    # Sending the disabled=true command twice turns all LEDs off reliably
+                    repeats = 2 if set_disabled else 1
+                    for _ in range(repeats):
+                        patch = session.patch(
+                            url=apiurl + "/" + led.get(".id"),
+                            auth=auth,
+                            json={"disabled": set_disabled},
+                            timeout=2
+                        )
+                        if patch.status_code != 200:
+                            logging.error(f"Failed to switch LED: {led.get('.id')}"
+                                          f" with status {patch.status_code}, content: {patch.text}")
                 else:
                     logging.debug(f"LED {led.get('.id')} already set to disabled={set_disabled}")
         else:
