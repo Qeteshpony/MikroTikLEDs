@@ -1,0 +1,8 @@
+name: mikrotik-led-controller
+
+services:
+  runner:
+    build: ./
+    restart: unless-stopped
+    env_file:
+      - ledswitch.env
