@@ -15,9 +15,9 @@ def on_connect(_client, _userdata, _flags, rc, _properties):
 def on_message(_client, _userdata, msg):
     logging.debug(msg.topic+" "+msg.payload.decode("utf-8"))
     if msg.topic == environ["MQTT_TOPIC"]:
-        if msg.payload.decode("utf-8").lower() == "on":
+        if msg.payload.decode("utf-8").lower() in ("on", "true", "1"):
             switch_leds(set_disabled=False)
-        if msg.payload.decode("utf-8").lower() == "off":
+        if msg.payload.decode("utf-8").lower() in ("off", "false", "0"):
             switch_leds(set_disabled=True)
 
 if __name__ == '__main__':
