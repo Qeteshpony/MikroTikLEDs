@@ -6,6 +6,7 @@ from requests.auth import HTTPBasicAuth
 devices = environ['MT_DEVICES'].split(",")  # expects comma seperated list of domains or IPs
 auth = HTTPBasicAuth(environ["MT_USERNAME"], environ["MT_PASSWORD"])
 proto = "https://" if environ["MT_SSL"].lower() == "true" else "http://"
+timeout = 10
 
 def switch_leds(set_disabled: bool) -> None:
     for device in devices:
@@ -16,7 +17,7 @@ def switch_leds(set_disabled: bool) -> None:
         leds = session.get(
             url=apiurl,
             auth=auth,
-            timeout=2
+            timeout=timeout,
         )
         if leds.status_code == 200:
             leds = leds.json()
@@ -27,8 +28,8 @@ def switch_leds(set_disabled: bool) -> None:
                 if status != set_disabled:
                     logging.debug(f"Switching LED {led.get('.id')} to disabled={set_disabled}")
 
-                    # Workaround for assumed bug found in RouterOS 7.15
-                    # The devices returns the desired status for the LED and the LED stops blinking on activity but
+                    # Workaround for (confirmed by MikroTik) bug found in RouterOS 7.15
+                    # The device returns the desired status for the LED and the LED stops blinking on activity but
                     # it sometimes stays on instead of off.
                     # Sending the disabled=true command twice turns all LEDs off reliably
                     repeats = 2 if set_disabled else 1
@@ -37,7 +38,7 @@ def switch_leds(set_disabled: bool) -> None:
                             url=apiurl + "/" + led.get(".id"),
                             auth=auth,
                             json={"disabled": set_disabled},
-                            timeout=2
+                            timeout=timeout,
                         )
                         if patch.status_code != 200:
                             logging.error(f"Failed to switch LED: {led.get('.id')}"
