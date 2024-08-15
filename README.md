@@ -7,7 +7,7 @@ I run this on my docker host but the python script can be easily adapted to work
 
 ### Usage
 - Create a user with _full_ permissions on each of the devices and give it a strong password
-- Copy the ledswitch.example.env file to ledswitch.env and edit it. 
+- Copy the ledswitch.example.env file to ledswitch.env 
 - Edit the ledswitch.env file and fill in your data
 - Build and start the container by running `docker compose up -d`
 
